@@ -24,12 +24,12 @@ y = dataset.iloc[:, 13].values
 # Encoding categorical data
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.compose import ColumnTransformer
-ct = ColumnTransformer([("Geography", OneHotEncoder(), [1])], remainder = 'passthrough')
-X = ct.fit_transform(X)
-
-ct1 = ColumnTransformer([("Gender", OneHotEncoder(), [2])], remainder = 'passthrough')
-X = ct1.fit_transform(X)
+labelencoder_X_2 = LabelEncoder()
+X[:, 2] = labelencoder_X_2.fit_transform(X[:, 2])
+columnTransformer = ColumnTransformer([('encoder', OneHotEncoder(), [1])], remainder='passthrough')
+X = np.array(columnTransformer.fit_transform(X), dtype = np.str)
 X = X[:, 1:]
+
 
 '''
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
