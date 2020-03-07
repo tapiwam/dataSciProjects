@@ -64,6 +64,7 @@ import tensorflow as tf
 import keras
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.layers import Dropout
 
 # Initialize the ANN
 classifier = Sequential()
@@ -76,10 +77,11 @@ kernel_initializer - How teh layer is initialized
 input_dim - Number of inputs - Tuned to th e# of independent variables we extracted
 '''
 classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+classifier.add(Dropout(p=0.1))
 
 # Step 2 - Adding the second hidden layer
 classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
-
+classifier.add(Dropout(p=0.1))
 
 # Adding the output layer
 '''
@@ -98,7 +100,7 @@ metrics - criteria you use to evaulate/improve your model
 classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # Fitting classifier to the Training set
-classifier.fit(X_train, y_train, batch_size=10, epochs=40)
+classifier.fit(X_train, y_train, batch_size=10, epochs=30)
 
 # ===========
 # Part 3 - Making preditions
@@ -117,32 +119,25 @@ cm = confusion_matrix(y_test, y_pred)
 # ===========
 # Part 4 - Evaluate, Imporoving and Tunning ANN
 
-
+# Evaluating the ANN
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import cross_val_score
-
-
-# Evaluate ANN
+from keras.models import Sequential
+from keras.layers import Dense
 def build_classifier():
+    classifier = Sequential()
     classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+    classifier.add(Dropout(p=0.1))
     classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+    classifier.add(Dropout(p=0.1))
     classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
-    classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
     return classifier
-
-# Build classifier trained on K fold
-'''
-classifier = KerasClassifier(build_fn=buildClassifier, batch_size=10, epochs=50)
-
-# n_jobs = -1 is all CPUs
-accuracies = cross_val_score(estimator=classifier, X=X_train, y=y_train, cv=10, n_jobs=-1)
-'''
-
-classifier1 = KerasClassifier(build_fn = build_classifier, batch_size = 10, epochs = 100)
-
-accuracies = cross_val_score(estimator = classifier1, X = X_train, y = y_train, cv = 10, n_jobs = 10)
-
+classifier = KerasClassifier(build_fn = build_classifier, batch_size = 10, epochs = 30)
+accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10, n_jobs = -1)
 mean = accuracies.mean()
 variance = accuracies.std()
 
 # ===========
+# Drop ou regularization
+
