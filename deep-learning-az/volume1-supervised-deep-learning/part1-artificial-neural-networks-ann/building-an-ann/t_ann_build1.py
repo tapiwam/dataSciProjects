@@ -187,7 +187,7 @@ X1 = sc.transform(d1x)
 y1 = classifier.predict(X1)
 y1x = (y1 > 0.5)
 
-print(f'Prediction: p={y1[0,0]} exited={y1x[0,0]}')
+print(f'Prediction: {"{:.3%}".format(y1[0,0])} chance to exit. Will Exit={y1x[0,0]}')
 
 print('..... END: Building Model for churn classification .......')
 
