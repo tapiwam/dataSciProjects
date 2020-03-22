@@ -105,7 +105,6 @@ classifier.fit(X_train, y_train, batch_size=10, epochs=30)
 # ===========
 # Part 3 - Making preditions
 
-
 # Predicting the Test set results
 # Convert probabilities as true or false
 y_pred = classifier.predict(X_test)
@@ -117,7 +116,7 @@ cm = confusion_matrix(y_test, y_pred)
 
 
 # ===========
-# Part 4 - Evaluate, Imporoving and Tunning ANN
+# Part 4 - Evaluating, Improving and Tuning the ANN
 
 # Evaluating the ANN
 from keras.wrappers.scikit_learn import KerasClassifier
@@ -127,17 +126,70 @@ from keras.layers import Dense
 def build_classifier():
     classifier = Sequential()
     classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
-    classifier.add(Dropout(p=0.1))
     classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
-    classifier.add(Dropout(p=0.1))
     classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
     classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
     return classifier
-classifier = KerasClassifier(build_fn = build_classifier, batch_size = 10, epochs = 30)
-accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10, n_jobs = -1)
+classifier = KerasClassifier(build_fn = build_classifier, batch_size = 10, epochs = 100)
+accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10, n_jobs = 10)
 mean = accuracies.mean()
 variance = accuracies.std()
 
-# ===========
-# Drop ou regularization
+# Improving the ANN
+# Dropout Regularization to reduce overfitting if needed
+
+# Tuning the ANN
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import GridSearchCV
+from keras.models import Sequential
+from keras.layers import Dense
+def build_classifier(optimizer, activation1, activation2, nlayer1, nlayer2):
+    classifier = Sequential()
+    classifier.add(Dense(units = nlayer1, kernel_initializer = 'uniform', activation = activation1, input_dim = 11))
+    classifier.add(Dense(units = nlayer2, kernel_initializer = 'uniform', activation = activation2))
+    classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
+    classifier.compile(optimizer = optimizer, loss = 'binary_crossentropy', metrics = ['accuracy'])
+    return classifier
+classifier = KerasClassifier(build_fn = build_classifier)
+parameters = {'batch_size': [25],
+              'epochs': [500],
+              'optimizer': ['adam', 'rmsprop'],
+              'activation1': ['softmax'],
+              'activation2': ['softmax'],
+              'nlayer1': [6],
+              'nlayer2': [6]
+              
+              }
+grid_search = GridSearchCV(estimator = classifier,
+                           param_grid = parameters,
+                           scoring = 'accuracy',
+                           cv = 10, n_jobs=12)
+grid_search = grid_search.fit(X_train, y_train)
+best_parameters = grid_search.best_params_
+best_accuracy = grid_search.best_score_
+
+'''
+parameters = {'batch_size': [25, 32],
+              'epochs': [100, 500],
+              'optimizer': ['adam', 'rmsprop'],
+              'activation1': ['relu', 'softmax'],
+              'activation2': ['relu', 'softmax'],
+              'nlayer1': [11, 9, 6],
+              'nlayer2': [6]
+              
+              }
+-------
+grid_search.best_params_
+Out[15]: 
+{'activation1': 'softmax',
+ 'activation2': 'softmax',
+ 'batch_size': 25,
+ 'epochs': 500,
+ 'nlayer1': 6,
+ 'nlayer2': 6,
+ 'optimizer': 'adam'}
+
+grid_search.best_score_
+Out[16]: 0.860625
+'''
 
